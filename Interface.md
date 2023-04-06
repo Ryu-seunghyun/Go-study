@@ -83,7 +83,7 @@ func Project(**dev Develop**,ops Operate,...) bool {
 
 - 인터페이스 활용 예시
     
-    [ Todo-List ].  생성자 선언
+    [ Todo-List ]  생성자 선언
     
     ```jsx
     func NewTodoService(todoRepository **repository.Todos**) *TodoService {
@@ -154,7 +154,7 @@ var dev_group Develop = &Backend{ .. }  O
 
 ### Type assertion
 
-        **런타임 에러 (panic)를 피하기 위해 검증하는 과정**
+        런타임 에러 (panic)를 피하기 위해 검증하는 과정
 
 인터페이스는 모든 유형의 타입을 지원하기 때문에, 
 `var Emp_Name interface{}`  변수가 `“12303510” or 12303510` 와 같은 인터페이스 값을 사용하려면 타입을 분명히 해야 할 필요가 있음.
@@ -205,7 +205,7 @@ _, ok := interface{}(l).(Logger)
 ```
 
 <aside>
-💡 **덕 타이핑**
+💡 덕 타이핑
 
 일단 객체를 정의한 후  해당 객체가 인터페이스에 정의한 메서드를 모두 포함하는 경우
 인스턴스를 인터페이스로 활용이 가능
@@ -329,30 +329,37 @@ type ReadWriter interface {
       Pop() interface{}
     }
     ```
-    
 
-**Tip.**  sort.Reverse()
-
-사용자가 Interface 인터페이스로부터 생성한 구체화된 객체를 reverse로 객체를 재정의하여 사용
+**Interface Customizing**
 
 ```go
-type Interface interface {
-	Len() int
-	Less(i, j int) bool
-	Swap(i, j int)
-}
-type reverse struct {
-	// This embedded Interface permits Reverse to use the methods of
-	// another Interface implementation.
-	Interface
+// encoding/json
+type Unmarshaler interface {
+	UnmarshalJSON([]byte) error
 }
 
-// Less returns the opposite of the embedded implementation's Less method.
-func (r reverse) Less(i, j int) bool {
-	return r.Interface.Less(j, i)
+// Custom Interface
+type myTime time.Time
+
+var _ json.Unmarshaler = &myTime{}
+
+func (mt *myTime) UnmarshalJSON(bs []byte) error {
+	var s string
+	err := json.Unmarshal(bs, &s)
+	if err != nil {
+		return err
+	}
+	t, err := time.ParseInLocation("2006-01-02", s, time.UTC)
+	if err != nil {
+		return err
+	}
+	*mt = myTime(t)
+	return nil
 }
 
-func Reverse(data Interface) Interface {
-	return &reverse{data}
+type Class struct {
+	StartAt     myTime `json:"start_at" binding:"required"`
+	ChallengeID uint   `json:"challenge_id" gorm:"index" binding:"required"`
 }
+
 ```
