@@ -355,8 +355,4 @@ func (r reverse) Less(i, j int) bool {
 func Reverse(data Interface) Interface {
 	return &reverse{data}
 }
-
-func (r reverse) Less(i, j int) bool {
-	return r.Interface.Less(j, i)
-}
 ```
